@@ -318,51 +318,6 @@ alert("Schedule Created");
             component="main"
             className={classes.heroContent}
           >
-             <form className={classes.container} noValidate>
-  <TextField
-    id="date"
-    label="Schedule"
-    type="date"
-    defaultValue="2017-05-24"
-    className={classes.textField}
-    InputLabelProps={{
-      shrink: true,
-    }}
-    onChange={(e)=>setDate(e.target.value)}
-  />
-   <TextField
-    id="time"
-    label="Start time"
-    type="time"
-    defaultValue="00:00"
-    className={classes.textField}
-    InputLabelProps={{
-      shrink: true,
-    }}
-    inputProps={{
-      step: 300, // 5 min
-    }}
-    onChange={(e)=>setStime(e.target.value)}
-  />
-    <TextField
-    id="time"
-    label="End Time"
-    type="time"
-    defaultValue="00:00"
-    className={classes.textField}
-    InputLabelProps={{
-      shrink: true,
-    }}
-    inputProps={{
-      step: 300, // 5 min
-    }}
-    onChange={(e)=>steEtime(e.target.value)}
-  />
-
-</form>
-<Button fullWidth color="primary" onClick={()=>{CreateSchdeule()}}>
-                      Create
-                    </Button>
                     
             <Typography
               component="h1"
