@@ -1,0 +1,371 @@
+/* eslint-disable */
+import React, { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { useHistory } from "react-router-dom";
+import clsx from 'clsx';
+import db from "../../Firebase/FireBase";
+import AppBar from "@material-ui/core/AppBar";
+import Button from "@material-ui/core/Button";
+import Card from "@material-ui/core/Card";
+import CardActions from "@material-ui/core/CardActions";
+import CardHeader from "@material-ui/core/CardHeader";
+import Grid from "@material-ui/core/Grid";
+import Toolbar from "@material-ui/core/Toolbar";
+import Typography from "@material-ui/core/Typography";
+import Link from "@material-ui/core/Link";
+import { makeStyles } from "@material-ui/core/styles";
+import Container from "@material-ui/core/Container";
+import Box from "@material-ui/core/Box";
+
+function Copyright() {
+  return (
+    <Typography variant="body2" color="textSecondary" align="center">
+      {"Copyright © "}
+      <Link color="inherit" href="https://material-ui.com/">
+        Your Website
+      </Link>{" "}
+      {new Date().getFullYear()}
+      {"."}
+    </Typography>
+  );
+}
+
+const useStyles = makeStyles((theme) => ({
+  "@global": {
+    ul: {
+      margin: 0,
+      padding: 0,
+      listStyle: "none",
+    },
+  },
+  appBar: {
+    borderBottom: `1px solid ${theme.palette.divider}`,
+  },
+  toolbar: {
+    flexWrap: "wrap",
+  },
+  toolbarTitle: {
+    flexGrow: 1,
+  },
+  link: {
+    margin: theme.spacing(1, 1.5),
+  },
+  heroContent: {
+    padding: theme.spacing(8, 0, 6),
+  },
+  cardHeader: {
+    backgroundColor:
+      theme.palette.type === "light"
+        ? theme.palette.grey[200]
+        : theme.palette.grey[700],
+  },
+  cardPricing: {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "baseline",
+    marginBottom: theme.spacing(2),
+  },
+  footer: {
+    borderTop: `1px solid ${theme.palette.divider}`,
+    marginTop: theme.spacing(8),
+    paddingTop: theme.spacing(3),
+    paddingBottom: theme.spacing(3),
+    [theme.breakpoints.up("sm")]: {
+      paddingTop: theme.spacing(6),
+      paddingBottom: theme.spacing(6),
+    },
+  },
+}));
+
+export default function StudentAssignmentDetails() {
+    const [Completed,setCompleted]=useState(false);
+  const classes = useStyles();
+  const [sid,setSid]=useState(localStorage.getItem('studentid'));
+  const [load,setLoad]=useState(false);
+  const [te, setTe] = useState();
+  const [pend,setPend]=useState(false);
+  const location = useLocation();
+  const history = useHistory();
+  const [shoow, setShoow] = useState(false);
+  const FindId = () => {
+      let id = "";
+      const url = location.pathname;
+      let i = url.length - 1;
+      while (url[i] !== "/") {
+          id += url[i];
+          i--;
+        }
+        id = id.split("").reverse().join("");
+        return id;
+    };
+  const [aid,setaid]=useState(FindId());
+  const logout = () => {
+    history.push("/");
+  };
+  
+  const getAssignFromStudent = async (userid)=>{
+    const querySnapshot = await db
+    .collection('Student')
+    .doc(userid)
+    .get();
+
+  return querySnapshot.data();
+  }
+  const getAssignFromAssign = async (userid)=>{
+    const querySnapshot = await db
+    .collection('Assignment')
+    .doc(userid)
+    .get();
+
+  return querySnapshot.data();
+  }
+  const show12 = async()=>{
+      setLoad(true);
+      let arr=te.StudentCompleted;
+      for(let i=0;i<arr.length;i++){
+          if(arr[i]===sid){
+              setCompleted(true);
+          }
+      }
+      setLoad(false);
+    setShoow(true)
+  }
+  const SubmitmyAssignment = async ()=>{
+    setLoad(true);
+     const init = async ()=>{
+         let temp=await getAssignFromStudent(sid);
+         let pend=temp.PendingA;
+         let prev=temp.PrevA;
+         let temp12=[];
+         prev.push(aid);
+         for(let i=0;i<pend.length;i++){
+             if(aid!==pend[i]){
+                 temp12.push(pend[i]);
+             }
+         }
+         await db
+    .collection('Student')
+    .doc(sid)
+    .update({
+        PendingA:temp12,
+        PrevA: prev,
+    });
+     }
+     await init();
+     const init1 = async ()=>{
+        let temp=await getAssignFromAssign(aid);
+        let pend=temp.StudentPending;
+        let prev=temp.StudentCompleted;
+        prev.push(sid);
+        let c1=[];
+        for(let i=0;i<pend.length;i++){
+            if(sid!==pend[i]){
+              c1.push(pend[i]);
+            }
+        }
+        await db
+   .collection('Assignment')
+   .doc(aid)
+   .update({
+       StudentPending:c1,
+       StudentCompleted: prev,
+   });
+    }
+    await init1();
+    setCompleted(true);
+    setLoad(false);
+    alert("Assignment submmited");
+  }
+  
+  useEffect(() => {
+    let id = FindId();
+    let t = db
+      .collection("Assignment")
+      .doc(id)
+      .onSnapshot((snapshot) => {
+        // setShoow(true)
+        setTe(() => {
+          return snapshot.data();
+        });
+      });
+  }, []);
+  if(load===false){
+  return (
+    <React.Fragment>
+        <AppBar position="absolute" className={clsx(classes.appBar)}>
+        <Toolbar className={classes.toolbar}>
+          <Typography component="h1" variant="h6" color="inherit" noWrap className={classes.title}>
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="red"
+            
+            className={classes.submit}
+            onClick={()=>{show12()}}
+          >
+            Show Details of the Class please wait 2 second:)t
+          </Button>
+          </Typography>
+            {/* <Badge  color="red" align="center" className="bg"> */}
+            <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            color="red"
+            
+            className={classes.submit}
+            onClick={()=>{logout()}}
+          >
+            Log Out
+          </Button>
+            {/* </Badge> */}
+            {/* <Badge color="red" align="center" className="bg"> */}
+            
+            {/* </Badge> */}
+        </Toolbar>
+      </AppBar>
+      
+      {shoow === true ? (
+        <div>
+          <Container
+            maxWidth="sm"
+            component="main"
+            className={classes.heroContent}
+          >
+            <Typography
+              component="h1"
+              variant="h2"
+              align="center"
+              color="textPrimary"
+              gutterBottom
+            >
+              {te.Name}
+            </Typography>
+            <Typography
+              variant="h5"
+              align="center"
+              color="textSecondary"
+              component="p"
+            >
+              {te.Description}
+            </Typography>
+          </Container>
+          {/* End hero unit */}
+          <Container maxWidth="md" component="main">
+            <Grid container spacing={5} alignItems="flex-end">
+            <Grid item xs={12} md={4}>
+                <Card>
+                  <CardHeader
+                    title={"Test Link"}
+                    // subheader={tier.subheader}
+                    titleTypographyProps={{ align: "center" }}
+                    subheaderTypographyProps={{ align: "center" }}
+                    // action={tier.title === 'Pro' ? <StarIcon /> : null}
+                    className={classes.cardHeader}
+                  />
+                 {te.Test}
+                  
+                    
+
+                  
+                </Card>
+              </Grid>
+              
+           {
+           Completed===true? 
+           <Grid item xs={12} md={4}>
+                
+                <Card>
+                  <CardHeader
+                    title={"Completed"}
+                    // subheader={tier.subheader}
+                    titleTypographyProps={{ align: "center" }}
+                    subheaderTypographyProps={{ align: "center" }}
+                    // action={tier.title === 'Pro' ? <StarIcon /> : null}
+                    className={classes.cardHeader}
+                  />
+                  
+                  <CardActions>
+                 
+                 
+                
+                   
+                  </CardActions>
+            
+                </Card>
+              </Grid>
+              :
+              <Grid item xs={12} md={4}>
+                
+                <Card>
+                  <CardHeader
+                    title={"Assignment Pending"}
+                    // subheader={tier.subheader}
+                    titleTypographyProps={{ align: "center" }}
+                    subheaderTypographyProps={{ align: "center" }}
+                    // action={tier.title === 'Pro' ? <StarIcon /> : null}
+                    className={classes.cardHeader}
+                  />
+                  
+                  <CardActions>
+                 
+                 
+                
+                   
+                  </CardActions>
+                  <Button
+                      fullWidth color="primary"
+                       onClick={()=>{
+                           SubmitmyAssignment()
+                       }}
+                     >
+                       Submit Assign
+                     </Button>
+                  <>
+                    {pend === true ? (
+                      <>
+                        {te.StudentPending.map((e) => {
+                          return (
+                            <Typography component="li" variant="subtitle1" align="center" key={JSON.stringify(e)}>
+                            {JSON.stringify(e)}
+                            </Typography>
+                            
+                          );
+                        })}
+                  </>
+                    ) : (
+                      <Button
+                      fullWidth color="primary"
+                       onClick={()=>{
+                           setPend(true);
+                       }}
+                     >
+                       Show ID of the Students in the Class
+                     </Button>
+                    )}
+                  </>
+                </Card>
+              </Grid>
+            
+                      }  </Grid>
+          </Container>
+        </div>
+      ) : 
+        <></>
+      }
+      <Container maxWidth="md" component="footer" className={classes.footer}>
+        <Box mt={5}>
+          <Copyright />
+        </Box>
+      </Container>
+      {/* End footer */}
+    </React.Fragment>
+  );
+    }
+    return(
+        <div className="spinner-border text-primary spinner-position pos1">
+      </div>
+      );
+
+}
